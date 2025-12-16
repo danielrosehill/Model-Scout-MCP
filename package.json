@@ -1,5 +1,5 @@
 {
-  "name": "@danielrosehill/model-scout-mcp",
+  "name": "model-scout-mcp",
   "version": "0.1.0",
   "description": "MCP server for discovering, comparing, and selecting LLM models across providers with real-time pricing and capabilities",
   "main": "index.js",
