@@ -1,0 +1,52 @@
+{
+  "name": "@danielrosehill/token-compare-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for comparing LLM model pricing and capabilities across providers",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "echo \"Tests coming soon\" && exit 0"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "llm",
+    "openrouter",
+    "model-comparison",
+    "pricing",
+    "cost-estimation",
+    "ai",
+    "claude",
+    "mcp-server"
+  ],
+  "author": {
+    "name": "Daniel Rosehill",
+    "email": "public@danielrosehill.com",
+    "url": "https://danielrosehill.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danielrosehill/Token-Compare-MCP.git"
+  },
+  "bugs": {
+    "url": "https://github.com/danielrosehill/Token-Compare-MCP/issues"
+  },
+  "homepage": "https://github.com/danielrosehill/Token-Compare-MCP#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0",
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {},
+  "files": [
+    "index.js",
+    "src/**/*",
+    "README.md",
+    "LICENSE"
+  ]
+}

@@ -35,23 +35,21 @@ This MCP server provides **grounding** - giving LLMs access to current, accurate
 **User**: "What's the latest GPT-4 variant?"
 **MCP**: Returns newest models sorted by release date
 
-## Tool Architecture (6 Total)
+## Tool Architecture (2 Tools)
 
-### Core Tools (5 - Always Available)
-Simple, explicit tools for factual data retrieval:
+### 1. `get_model`
+Direct lookup of a specific model by ID. Returns complete details including API endpoint.
 
-1. **`get_model`** - Complete model details + API endpoint
-2. **`list_models`** - List/filter models by criteria
-3. **`check_cost`** - Calculate costs for workload
-4. **`compare_models`** - Side-by-side comparison
-5. **`search_models`** - Text search in catalog
+**Use**: "What's the API endpoint for Claude Opus?"
 
-### Advanced Tool (1 - Optional)
-AI-powered consultation that orchestrates the core tools:
+### 2. `consider_models`
+Flexible exploration tool that adapts to the request. Handles:
+- Filtering/searching ("show me free models")
+- Model comparison ("compare Claude vs GPT-4")
+- Cost analysis ("what will 1M tokens cost?")
+- Decision support ("I need a cheap instructional model")
 
-6. **`consult_model_selection`** - Intelligent recommendations based on requirements
-
-**Key Design Decision**: Users can disable the consultation tool if they only want factual lookups, keeping the MCP lightweight and predictable.
+**Key Design Decision**: Instead of 6+ narrow tools, one flexible tool for "considering" models handles all exploration, comparison, and cost analysis. Can be as simple (list) or complex (multi-factor analysis) as the request demands.
 
 ## What Information Is Available
 

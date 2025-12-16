@@ -16,30 +16,31 @@ This MCP server solves these problems by providing real-time access to model cat
 **Phase**: Planning and Design
 
 **Provider Support**:
-- ✅ OpenRouter API analyzed and documented
-- 🔄 Planned: Additional providers (Replicate, Together, etc.)
+- ✅ **OpenRouter** - Currently supported (100+ models from 50+ providers)
+- 🔄 Future: Additional providers may be added
+
+**Note**: OpenRouter is currently the only supported provider because it provides comprehensive programmatic access to model pricing and capabilities. Not all model providers offer APIs for cost inspection, making OpenRouter an ideal aggregator for this use case.
 
 ## Documentation
 
+- **[tools-consolidated.md](tools-consolidated.md)** - **Complete tool specifications** (start here)
 - **[SUMMARY.md](SUMMARY.md)** - Executive summary and value proposition
-- **[tools-final.md](tools-final.md)** - **Final tool specifications** (recommended starting point)
 - **[api-analysis.md](api-analysis.md)** - Detailed OpenRouter API structure and fields
-- **[design.md](design.md)** - Overall architecture and design decisions
-- **[tools-proposal.md](tools-proposal.md)** - Initial tool brainstorming (superseded by tools-final.md)
+- **[design.md](design.md)** - Architecture and design decisions
 
-## Tool Architecture
+## Tool Architecture (2 Tools)
 
-### Core Tools (5 - Always Available)
-1. **`get_model`** - Get model details + API endpoint information
-2. **`list_models`** - List and filter available models
-3. **`check_cost`** - Calculate costs for specific workload
-4. **`compare_models`** - Side-by-side comparison of 2-5 models
-5. **`search_models`** - Text search in model catalog
+### 1. `get_model`
+Direct lookup of a specific model by ID. Returns complete details including API endpoint information.
 
-### Advanced Tool (1 - Optional)
-6. **`consult_model_selection`** - AI-powered model consultation
+### 2. `consider_models`
+Flexible tool for exploring, comparing, and analyzing models based on user needs. Handles:
+- Filtering and searching
+- Model comparison
+- Cost analysis and projections
+- Recommendations with trade-offs
 
-**Design Philosophy**: Keep basic tools simple and explicit. The consultation tool orchestrates them for intelligent recommendations. Users can disable the consultation tool if they only want factual data retrieval.
+**Design Philosophy**: One tool for lookup, one tool for consideration. The `consider_models` tool adapts its behavior based on the request - it can be as simple as listing free models or as complex as multi-factor decision analysis with cost projections.
 
 ## Key Features
 
@@ -145,10 +146,50 @@ OpenRouter aggregates models from multiple providers:
 - Bulk comparison tools
 - Custom filtering DSL
 
-## License
+## Installation
 
-[Add license information]
+### Prerequisites
+- Node.js 18 or higher
+- OpenRouter API key ([get one here](https://openrouter.ai/keys))
+
+### Setup
+```bash
+# Install dependencies
+npm install
+
+# Configure API key
+cp .env.example .env
+# Edit .env and add your OPENROUTER_API_KEY
+```
+
+### Usage with Claude Desktop
+Add to your MCP settings (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+
+```json
+{
+  "mcpServers": {
+    "token-compare": {
+      "command": "node",
+      "args": ["/path/to/Token-Compare-MCP/index.js"],
+      "env": {
+        "OPENROUTER_API_KEY": "your-key-here"
+      }
+    }
+  }
+}
+```
 
 ## Contributing
 
-[Add contribution guidelines]
+Contributions welcome! Please open an issue or PR on GitHub.
+
+## License
+
+MIT License - See LICENSE file for details
+
+## Author
+
+**Daniel Rosehill**
+- Website: [danielrosehill.com](https://danielrosehill.com)
+- GitHub: [@danielrosehill](https://github.com/danielrosehill)
+- Email: public@danielrosehill.com
