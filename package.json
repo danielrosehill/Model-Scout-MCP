@@ -1,15 +1,17 @@
 {
   "name": "model-scout-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server for discovering, comparing, and selecting LLM models across providers with real-time pricing and capabilities",
-  "main": "index.js",
+  "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "model-scout-mcp": "./index.js"
+    "model-scout-mcp": "dist/index.js"
   },
   "scripts": {
-    "start": "node index.js",
+    "start": "node dist/index.js",
     "dev": "node --watch index.js",
+    "build": "mkdir -p dist && cp index.js dist/index.js",
+    "prepublishOnly": "npm run build",
     "test": "node test-server.js"
   },
   "keywords": [
@@ -47,8 +49,7 @@
   },
   "devDependencies": {},
   "files": [
-    "index.js",
-    "src/**/*",
+    "dist",
     "README.md",
     "LICENSE"
   ]
