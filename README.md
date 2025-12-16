@@ -177,8 +177,14 @@ cd Model-Scout-MCP
 # Install dependencies
 npm install
 
-# Test the server (optional)
-node test-server.js
+# Link for local testing (optional)
+npm link
+
+# Test the server
+npm test  # or: node test-server.js
+
+# Test MCP protocol (optional)
+./test-mcp-server.sh
 ```
 
 ## Usage with Claude Desktop
