@@ -4,6 +4,9 @@
   "description": "MCP server for discovering, comparing, and selecting LLM models across providers with real-time pricing and capabilities",
   "main": "index.js",
   "type": "module",
+  "bin": {
+    "model-scout-mcp": "./index.js"
+  },
   "scripts": {
     "start": "node index.js",
     "dev": "node --watch index.js",

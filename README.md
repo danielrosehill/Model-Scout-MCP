@@ -1,5 +1,8 @@
 # Model Scout MCP
 
+[![npm version](https://badge.fury.io/js/model-scout-mcp.svg)](https://www.npmjs.com/package/model-scout-mcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 An MCP (Model Context Protocol) server for discovering, comparing, and selecting LLM models across providers with real-time pricing and capabilities.
 
 ## Problem Statement
@@ -152,7 +155,20 @@ OpenRouter aggregates models from multiple providers:
 - Node.js 18 or higher
 - OpenRouter API key ([get one here](https://openrouter.ai/keys))
 
-### Setup
+### Option 1: Install via npm (Recommended)
+
+Install globally or use with npx:
+
+```bash
+# Install globally
+npm install -g model-scout-mcp
+
+# Or use with npx (no installation needed)
+npx model-scout-mcp
+```
+
+### Option 2: Install from Source
+
 ```bash
 # Clone the repository
 git clone https://github.com/danielrosehill/Model-Scout-MCP.git
@@ -161,30 +177,65 @@ cd Model-Scout-MCP
 # Install dependencies
 npm install
 
-# Configure API key
-cp .env.example .env
-# Edit .env and add your OPENROUTER_API_KEY
-
 # Test the server (optional)
 node test-server.js
 ```
 
-### Usage with Claude Desktop
-Add to your MCP settings (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+## Usage with Claude Desktop
+
+Add to your MCP settings file:
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Linux**: `~/.config/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+### Using npx (Recommended)
+
+```json
+{
+  "mcpServers": {
+    "model-scout": {
+      "command": "npx",
+      "args": ["-y", "model-scout-mcp"],
+      "env": {
+        "OPENROUTER_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}
+```
+
+### Using Global Install
+
+```json
+{
+  "mcpServers": {
+    "model-scout": {
+      "command": "model-scout-mcp",
+      "env": {
+        "OPENROUTER_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}
+```
+
+### Using from Source
 
 ```json
 {
   "mcpServers": {
     "model-scout": {
       "command": "node",
-      "args": ["/path/to/Model-Scout-MCP/index.js"],
+      "args": ["/absolute/path/to/Model-Scout-MCP/index.js"],
       "env": {
-        "OPENROUTER_API_KEY": "your-key-here"
+        "OPENROUTER_API_KEY": "your-api-key-here"
       }
     }
   }
 }
 ```
+
+**Note**: Replace `your-api-key-here` with your actual OpenRouter API key from https://openrouter.ai/keys
 
 ## Contributing
 
