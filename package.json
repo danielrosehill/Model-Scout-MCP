@@ -1,7 +1,7 @@
 {
-  "name": "@danielrosehill/token-compare-mcp",
+  "name": "@danielrosehill/model-scout-mcp",
   "version": "0.1.0",
-  "description": "MCP server for comparing LLM model pricing and capabilities across providers",
+  "description": "MCP server for discovering, comparing, and selecting LLM models across providers with real-time pricing and capabilities",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -29,12 +29,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/danielrosehill/Token-Compare-MCP.git"
+    "url": "https://github.com/danielrosehill/Model-Scout-MCP.git"
   },
   "bugs": {
-    "url": "https://github.com/danielrosehill/Token-Compare-MCP/issues"
+    "url": "https://github.com/danielrosehill/Model-Scout-MCP/issues"
   },
-  "homepage": "https://github.com/danielrosehill/Token-Compare-MCP#readme",
+  "homepage": "https://github.com/danielrosehill/Model-Scout-MCP#readme",
   "engines": {
     "node": ">=18.0.0"
   },

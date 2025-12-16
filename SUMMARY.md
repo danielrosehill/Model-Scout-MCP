@@ -1,4 +1,4 @@
-# Token Compare MCP - Executive Summary
+# Model Scout MCP - Executive Summary
 
 ## What This Project Does
 

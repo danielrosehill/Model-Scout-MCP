@@ -575,7 +575,7 @@ async function considerModels(params) {
  */
 const server = new Server(
   {
-    name: 'token-compare-mcp',
+    name: 'model-scout-mcp',
     version: '0.1.0',
   },
   {
@@ -771,7 +771,7 @@ async function main() {
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('Token Compare MCP server running on stdio');
+  console.error('Model Scout MCP server running on stdio');
 }
 
 main();

@@ -1,6 +1,6 @@
-# Token Compare MCP
+# Model Scout MCP
 
-An MCP (Model Context Protocol) server that provides up-to-date model information, pricing, and intelligent search capabilities for LLM aggregator platforms.
+An MCP (Model Context Protocol) server for discovering, comparing, and selecting LLM models across providers with real-time pricing and capabilities.
 
 ## Problem Statement
 
@@ -155,8 +155,8 @@ OpenRouter aggregates models from multiple providers:
 ### Setup
 ```bash
 # Clone the repository
-git clone https://github.com/danielrosehill/Token-Compare-MCP.git
-cd Token-Compare-MCP
+git clone https://github.com/danielrosehill/Model-Scout-MCP.git
+cd Model-Scout-MCP
 
 # Install dependencies
 npm install
@@ -175,9 +175,9 @@ Add to your MCP settings (`~/Library/Application Support/Claude/claude_desktop_c
 ```json
 {
   "mcpServers": {
-    "token-compare": {
+    "model-scout": {
       "command": "node",
-      "args": ["/path/to/Token-Compare-MCP/index.js"],
+      "args": ["/path/to/Model-Scout-MCP/index.js"],
       "env": {
         "OPENROUTER_API_KEY": "your-key-here"
       }

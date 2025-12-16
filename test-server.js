@@ -102,7 +102,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log('Token Compare MCP - Test Suite\n');
+  console.log('Model Scout MCP - Test Suite\n');
   console.log('Testing API connectivity and data parsing...');
 
   try {
