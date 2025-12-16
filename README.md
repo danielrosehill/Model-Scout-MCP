@@ -13,7 +13,7 @@ This MCP server solves these problems by providing real-time access to model cat
 
 ## Current Status
 
-**Phase**: Planning and Design
+**Phase**: ✅ **Implemented and Tested**
 
 **Provider Support**:
 - ✅ **OpenRouter** - Currently supported (100+ models from 50+ providers)
@@ -154,12 +154,19 @@ OpenRouter aggregates models from multiple providers:
 
 ### Setup
 ```bash
+# Clone the repository
+git clone https://github.com/danielrosehill/Token-Compare-MCP.git
+cd Token-Compare-MCP
+
 # Install dependencies
 npm install
 
 # Configure API key
 cp .env.example .env
 # Edit .env and add your OPENROUTER_API_KEY
+
+# Test the server (optional)
+node test-server.js
 ```
 
 ### Usage with Claude Desktop
