@@ -2,10 +2,13 @@
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
+import express from 'express';
+import { randomUUID } from 'crypto';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -576,7 +579,7 @@ async function considerModels(params) {
 const server = new Server(
   {
     name: 'model-scout-mcp',
-    version: '0.1.0',
+    version: '0.2.0',
   },
   {
     capabilities: {
@@ -586,136 +589,259 @@ const server = new Server(
 );
 
 /**
- * List available tools
+ * List available tools (stdio mode)
  */
 server.setRequestHandler(ListToolsRequestSchema, async () => {
-  return {
-    tools: [
-      {
-        name: 'get_model',
-        description: 'Get complete details for a specific model by ID, including API endpoint information',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            model_id: {
-              type: 'string',
-              description: 'Model ID, canonical slug, or name to look up',
-            },
-          },
-          required: ['model_id'],
-        },
-      },
-      {
-        name: 'consider_models',
-        description: 'Explore, compare, and analyze models based on requirements. Handles filtering, searching, comparison, cost analysis, and recommendations.',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            request: {
-              type: 'string',
-              description: 'Natural language description of what you need (e.g., "cheap instructional model", "models with vision", "compare Claude vs GPT")',
-            },
-            filters: {
-              type: 'object',
-              description: 'Optional structured filters',
-              properties: {
-                provider: {
-                  oneOf: [
-                    { type: 'string' },
-                    { type: 'array', items: { type: 'string' } }
-                  ],
-                  description: 'Filter by provider name(s)',
-                },
-                free_only: {
-                  type: 'boolean',
-                  description: 'Only show free models',
-                },
-                min_context: {
-                  type: 'number',
-                  description: 'Minimum context length',
-                },
-                max_context: {
-                  type: 'number',
-                  description: 'Maximum context length',
-                },
-                max_price_per_1m: {
-                  type: 'number',
-                  description: 'Maximum total cost per 1M tokens',
-                },
-                has_vision: {
-                  type: 'boolean',
-                  description: 'Must support image input',
-                },
-                has_tools: {
-                  type: 'boolean',
-                  description: 'Must support function/tool calling',
-                },
-                has_reasoning: {
-                  type: 'boolean',
-                  description: 'Must support chain-of-thought reasoning',
-                },
-                modality: {
-                  type: 'string',
-                  description: 'Filter by modality (e.g., "text->text", "text+image->text")',
-                },
-              },
-            },
-            model_ids: {
-              type: 'array',
-              items: { type: 'string' },
-              description: 'Specific model IDs to compare (if comparing specific models)',
-            },
-            workload: {
-              type: 'object',
-              description: 'Optional cost calculation scenario',
-              properties: {
-                prompt_tokens: {
-                  type: 'number',
-                  description: 'Number of input tokens',
-                },
-                completion_tokens: {
-                  type: 'number',
-                  description: 'Number of output tokens',
-                },
-                requests_per_day: {
-                  type: 'number',
-                  description: 'Number of requests per day',
-                },
-                requests_per_month: {
-                  type: 'number',
-                  description: 'Number of requests per month',
-                },
-                images: {
-                  type: 'number',
-                  description: 'Number of images',
-                },
-              },
-            },
-            max_results: {
-              type: 'number',
-              description: 'Maximum number of models to return (default: 10)',
-            },
-            sort_by: {
-              type: 'string',
-              enum: ['price', 'context', 'created', 'name', 'relevance'],
-              description: 'How to sort results',
-            },
-            force_refresh: {
-              type: 'boolean',
-              description: 'Force refresh cache (bypass 10-minute cache)',
-            },
-          },
-          required: ['request'],
-        },
-      },
-    ],
-  };
+  return { tools: getToolsList() };
 });
+
+/**
+ * Handle tool calls (stdio mode)
+ */
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  return handleToolCall(request);
+});
+
+/**
+ * Start server in stdio mode
+ */
+async function startStdioServer() {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  console.error('Model Scout MCP server running on stdio');
+}
+
+/**
+ * Start server in HTTP mode with streamable HTTP transport
+ */
+async function startHttpServer() {
+  const PORT = parseInt(process.env.MCP_PORT || '3000', 10);
+  const HOST = process.env.MCP_HOST || '127.0.0.1';
+
+  const app = express();
+  app.use(express.json());
+
+  // Store active transports by session ID
+  const transports = new Map();
+
+  // Health check endpoint
+  app.get('/health', (_req, res) => {
+    res.json({ status: 'ok', service: 'model-scout-mcp', version: '0.2.0' });
+  });
+
+  // Handle all MCP requests (both GET and POST) at /mcp
+  app.all('/mcp', async (req, res) => {
+    const sessionId = req.headers['mcp-session-id'];
+
+    let transport;
+
+    if (sessionId && transports.has(sessionId)) {
+      // Reuse existing transport for this session
+      transport = transports.get(sessionId);
+    } else if (req.method === 'POST' && !sessionId) {
+      // New session - create transport
+      transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: () => randomUUID(),
+      });
+
+      // Create a new server instance for this session
+      const sessionServer = new Server(
+        {
+          name: 'model-scout-mcp',
+          version: '0.2.0',
+        },
+        {
+          capabilities: {
+            tools: {},
+          },
+        }
+      );
+
+      // Set up request handlers for this session
+      sessionServer.setRequestHandler(ListToolsRequestSchema, async () => {
+        return { tools: getToolsList() };
+      });
+
+      sessionServer.setRequestHandler(CallToolRequestSchema, async (request) => {
+        return handleToolCall(request);
+      });
+
+      await sessionServer.connect(transport);
+
+      // Store transport after connection so we have the session ID
+      if (transport.sessionId) {
+        transports.set(transport.sessionId, transport);
+
+        // Clean up on close
+        transport.onclose = () => {
+          transports.delete(transport.sessionId);
+        };
+      }
+    } else if (req.method === 'GET' && !sessionId) {
+      // SSE stream requested without session - not allowed
+      res.status(400).json({ error: 'Session ID required for GET requests' });
+      return;
+    } else {
+      // Invalid request
+      res.status(400).json({ error: 'Invalid request' });
+      return;
+    }
+
+    // Handle the request with the transport
+    await transport.handleRequest(req, res, req.body);
+  });
+
+  // Handle session termination
+  app.delete('/mcp', async (req, res) => {
+    const sessionId = req.headers['mcp-session-id'];
+    if (sessionId && transports.has(sessionId)) {
+      const transport = transports.get(sessionId);
+      await transport.close();
+      transports.delete(sessionId);
+      res.status(200).json({ message: 'Session terminated' });
+    } else {
+      res.status(404).json({ error: 'Session not found' });
+    }
+  });
+
+  app.listen(PORT, HOST, () => {
+    console.error(`Model Scout MCP server running on http://${HOST}:${PORT}/mcp`);
+    console.error('Transport: Streamable HTTP');
+    console.error('Endpoints:');
+    console.error(`  - MCP:    POST/GET http://${HOST}:${PORT}/mcp`);
+    console.error(`  - Health: GET http://${HOST}:${PORT}/health`);
+  });
+}
+
+/**
+ * Get list of available tools
+ */
+function getToolsList() {
+  return [
+    {
+      name: 'get_model',
+      description: 'Get complete details for a specific model by ID, including API endpoint information',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          model_id: {
+            type: 'string',
+            description: 'Model ID, canonical slug, or name to look up',
+          },
+        },
+        required: ['model_id'],
+      },
+    },
+    {
+      name: 'consider_models',
+      description: 'Explore, compare, and analyze models based on requirements. Handles filtering, searching, comparison, cost analysis, and recommendations.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          request: {
+            type: 'string',
+            description: 'Natural language description of what you need (e.g., "cheap instructional model", "models with vision", "compare Claude vs GPT")',
+          },
+          filters: {
+            type: 'object',
+            description: 'Optional structured filters',
+            properties: {
+              provider: {
+                oneOf: [
+                  { type: 'string' },
+                  { type: 'array', items: { type: 'string' } }
+                ],
+                description: 'Filter by provider name(s)',
+              },
+              free_only: {
+                type: 'boolean',
+                description: 'Only show free models',
+              },
+              min_context: {
+                type: 'number',
+                description: 'Minimum context length',
+              },
+              max_context: {
+                type: 'number',
+                description: 'Maximum context length',
+              },
+              max_price_per_1m: {
+                type: 'number',
+                description: 'Maximum total cost per 1M tokens',
+              },
+              has_vision: {
+                type: 'boolean',
+                description: 'Must support image input',
+              },
+              has_tools: {
+                type: 'boolean',
+                description: 'Must support function/tool calling',
+              },
+              has_reasoning: {
+                type: 'boolean',
+                description: 'Must support chain-of-thought reasoning',
+              },
+              modality: {
+                type: 'string',
+                description: 'Filter by modality (e.g., "text->text", "text+image->text")',
+              },
+            },
+          },
+          model_ids: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Specific model IDs to compare (if comparing specific models)',
+          },
+          workload: {
+            type: 'object',
+            description: 'Optional cost calculation scenario',
+            properties: {
+              prompt_tokens: {
+                type: 'number',
+                description: 'Number of input tokens',
+              },
+              completion_tokens: {
+                type: 'number',
+                description: 'Number of output tokens',
+              },
+              requests_per_day: {
+                type: 'number',
+                description: 'Number of requests per day',
+              },
+              requests_per_month: {
+                type: 'number',
+                description: 'Number of requests per month',
+              },
+              images: {
+                type: 'number',
+                description: 'Number of images',
+              },
+            },
+          },
+          max_results: {
+            type: 'number',
+            description: 'Maximum number of models to return (default: 10)',
+          },
+          sort_by: {
+            type: 'string',
+            enum: ['price', 'context', 'created', 'name', 'relevance'],
+            description: 'How to sort results',
+          },
+          force_refresh: {
+            type: 'boolean',
+            description: 'Force refresh cache (bypass 10-minute cache)',
+          },
+        },
+        required: ['request'],
+      },
+    },
+  ];
+}
 
 /**
  * Handle tool calls
  */
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+async function handleToolCall(request) {
   try {
     const { name, arguments: args } = request.params;
 
@@ -758,10 +884,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       isError: true,
     };
   }
-});
+}
 
 /**
- * Start server
+ * Main entry point
  */
 async function main() {
   if (!OPENROUTER_API_KEY) {
@@ -769,9 +895,13 @@ async function main() {
     process.exit(1);
   }
 
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error('Model Scout MCP server running on stdio');
+  const transport = process.env.MCP_TRANSPORT || 'stdio';
+
+  if (transport === 'http') {
+    await startHttpServer();
+  } else {
+    await startStdioServer();
+  }
 }
 
 main();

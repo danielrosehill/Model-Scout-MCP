@@ -26,7 +26,8 @@
     "cost-estimation",
     "ai",
     "claude",
-    "mcp-server"
+    "mcp-server",
+    "streamable-http"
   ],
   "author": {
     "name": "Daniel Rosehill",
