@@ -5,6 +5,8 @@
 
 An MCP (Model Context Protocol) server for discovering, comparing, and selecting LLM models across providers with real-time pricing and capabilities.
 
+**Supports both stdio and [Streamable HTTP](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports) transports.**
+
 ## Problem Statement
 
 Large Language Models often have outdated knowledge about:
@@ -187,14 +189,16 @@ npm test  # or: node test-server.js
 ./test-mcp-server.sh
 ```
 
-## Usage with Claude Desktop
+## Configuration
+
+### Claude Desktop (stdio transport)
 
 Add to your MCP settings file:
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Linux**: `~/.config/Claude/claude_desktop_config.json`
 - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
-### Using npx (Recommended)
+#### Using npx (Recommended)
 
 ```json
 {
@@ -210,7 +214,7 @@ Add to your MCP settings file:
 }
 ```
 
-### Using Global Install
+#### Using Global Install
 
 ```json
 {
@@ -225,7 +229,7 @@ Add to your MCP settings file:
 }
 ```
 
-### Using from Source
+#### Using from Source
 
 ```json
 {
@@ -242,6 +246,49 @@ Add to your MCP settings file:
 ```
 
 **Note**: Replace `your-api-key-here` with your actual OpenRouter API key from https://openrouter.ai/keys
+
+### HTTP Transport (Streamable HTTP)
+
+For clients that support HTTP-based MCP connections, you can run the server in HTTP mode:
+
+```bash
+# Start the HTTP server
+MCP_TRANSPORT=http OPENROUTER_API_KEY=your-key node index.js
+
+# Or with npm scripts
+npm run start:http
+```
+
+#### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `OPENROUTER_API_KEY` | Your OpenRouter API key (required) | - |
+| `MCP_TRANSPORT` | Transport mode: `stdio` or `http` | `stdio` |
+| `MCP_PORT` | HTTP server port (HTTP mode only) | `3000` |
+| `MCP_HOST` | HTTP server host (HTTP mode only) | `127.0.0.1` |
+
+#### HTTP Endpoints
+
+When running in HTTP mode:
+
+- **MCP Endpoint**: `POST/GET http://127.0.0.1:3000/mcp`
+- **Health Check**: `GET http://127.0.0.1:3000/health`
+
+#### MCP Client Configuration (HTTP)
+
+For MCP clients that support streamable HTTP transport:
+
+```json
+{
+  "mcpServers": {
+    "model-scout": {
+      "url": "http://127.0.0.1:3000/mcp",
+      "transport": "streamable-http"
+    }
+  }
+}
+```
 
 ## Contributing
 
